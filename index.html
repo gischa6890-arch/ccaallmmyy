@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Calmy — AI Mental Health Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Fraunces:ital,opsz,wght@1,9..144,300&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   RESET & TOKENS
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+ 
+:root {
+  /* Colors */
+  --bg:          #f5f3ff;
+  --surface:     #ffffff;
+  --surface2:    #f0ecfc;
+  --surface3:    #e8e2f8;
+  --border:      #ddd6f7;
+  --border2:     #c9bff0;
+  --text:        #1a1030;
+  --text2:       #5a4d7a;
+  --text3:       #9b8fc0;
+ 
+  --purple:      #7c5cbf;
+  --purple-lt:   #CBAACB;
+  --blue:        #A7C7E7;
+  --blue-dk:     #5a8fb5;
+  --green:       #A8E6CF;
+  --green-dk:    #3a9e75;
+  --alert:       #FF6B6B;
+ 
+  /* Layout */
+  --nav-h:       60px;
+  --sidebar-w:   220px;
+  --bnav-h:      62px;
+ 
+  /* Tokens */
+  --r:           14px;
+  --r-sm:        9px;
+  --shadow:      0 2px 16px rgba(100,80,180,.08);
+  --shadow-sm:   0 1px 6px  rgba(100,80,180,.06);
+  --t:           .22s cubic-bezier(.4,0,.2,1);
+ 
+  /* Fonts */
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --serif:'Fraunces', Georgia, serif;
+}
+ 
+/* Dark mode overrides */
+.dark {
+  --bg:       #13111f;
+  --surface:  #1c1a2e;
+  --surface2: #252340;
+  --surface3: #2e2b50;
+  --border:   #302c50;
+  --border2:  #433d6a;
+  --text:     #ede8ff;
+  --text2:    #a89cc8;
+  --text3:    #5e5680;
+  --purple:   #9f7fe0;
+  --shadow:   0 2px 16px rgba(0,0,0,.3);
+  --shadow-sm:0 1px 6px  rgba(0,0,0,.2);
+}
+ 
+/* ============================================================
+   BASE
+   ============================================================ */
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background var(--t), color var(--t);
+  -webkit-font-smoothing: antialiased;
+}
+ 
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  z-index: 900;
+  transition: background var(--t), border-color var(--t);
+  gap: 12px;
+}
+.nav-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 22px; font-weight: 300; font-style: italic;
+  color: var(--purple); cursor: pointer; text-decoration: none;
+  letter-spacing: -.3px;
+}
+.hamburger {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; color: var(--text2); padding: 6px;
+  border-radius: var(--r-sm); line-height: 1;
+  transition: background var(--t);
+}
+.hamburger:hover { background: var(--surface2); }
+ 
+.nav-links { display: flex; gap: 2px; align-items: center; flex: 1; justify-content: center; }
+.nav-link {
+  padding: 7px 14px; border-radius: var(--r-sm);
+  border: none; background: none;
+  color: var(--text2); font-family: var(--sans); font-size: 14px;
+  cursor: pointer; transition: background var(--t), color var(--t);
+}
+.nav-link:hover, .nav-link.active { background: var(--surface2); color: var(--text); }
+ 
+.nav-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.pill-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 11px;
+  cursor: pointer; font-size: 12px; color: var(--text2);
+  font-family: var(--sans);
+  transition: background var(--t), border-color var(--t);
+}
+.pill-btn:hover { background: var(--surface3); }
+.pill-dot {
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--purple); flex-shrink: 0;
+}
+.btn-nav {
+  padding: 7px 16px; border-radius: var(--r-sm);
+  border: 1.5px solid var(--border2); background: none;
+  color: var(--text2); font-family: var(--sans); font-size: 13px;
+  cursor: pointer; transition: all var(--t); white-space: nowrap;
+}
+.btn-nav:hover { background: var(--surface2); color: var(--text); border-color: var(--purple); }
+ 
+/* ============================================================
+   MOBILE DRAWER
+   ============================================================ */
+.drawer-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 950;
+}
+.drawer-overlay.open { display: block; }
+.drawer {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: 260px; background: var(--surface);
+  z-index: 960; padding: 0;
+  transform: translateX(-100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow-y: auto; display: flex; flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-logo { font-family: var(--serif); font-size: 20px; font-style: italic; color: var(--purple); }
+.drawer-close {
+  background: none; border: none; font-size: 18px; color: var(--text3);
+  cursor: pointer; padding: 4px; border-radius: var(--r-sm);
+  transition: background var(--t);
+}
+.drawer-close:hover { background: var(--surface2); }
+.drawer-body { padding: 10px 10px 16px; flex: 1; }
+.drawer-section {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--text3); padding: 0 8px; margin: 14px 0 5px;
+}
+.drawer-foot { padding: 12px 10px 20px; border-top: 1px solid var(--border); }
+ 
+/* ============================================================
+   MOBILE BOTTOM NAV
+   ============================================================ */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+  z-index: 890;
+  padding: 4px 0 max(env(safe-area-inset-bottom, 4px), 4px);
+  justify-content: space-around; align-items: center;
+}
+.bnav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 10px; font-family: var(--sans);
+  padding: 5px 14px; border-radius: 10px; min-width: 56px;
+  transition: color var(--t);
+}
+.bnav-btn.active { color: var(--purple); }
+.bnav-icon { font-size: 20px; line-height: 1.2; }
+ 
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+ 
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 20px; border-radius: var(--r-sm);
+  border: none; cursor: pointer;
+  font-family: var(--sans); font-size: 14px; font-weight: 400;
+  transition: all var(--t); text-align: center; white-space: nowrap;
+}
+.btn:active { transform: scale(.96); }
+.btn-primary  { background: var(--purple);   color: #fff; }
+.btn-primary:hover  { opacity: .88; }
+.btn-green    { background: var(--green-dk); color: #fff; }
+.btn-green:hover    { opacity: .88; }
+.btn-blue     { background: var(--blue-dk);  color: #fff; }
+.btn-blue:hover     { opacity: .88; }
+.btn-alert    { background: var(--alert);    color: #fff; }
+.btn-alert:hover    { opacity: .88; }
+.btn-outline  { background: none; border: 1px solid var(--border2); color: var(--text2); }
+.btn-outline:hover  { background: var(--surface2); color: var(--text); }
+.btn-ghost    { background: none; border: none; color: var(--text2); }
+.btn-ghost:hover    { background: var(--surface2); }
+.btn-sm   { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+.btn-lg   { padding: 13px 32px; font-size: 15px; border-radius: var(--r); }
+.btn-block{ width: 100%; }
+ 
+/* Cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--t), border-color var(--t);
+}
+.card-sm { padding: 11px 14px; border-radius: var(--r-sm); }
+.card-hover { cursor: pointer; transition: all var(--t); }
+.card-hover:hover { border-color: var(--border2); box-shadow: var(--shadow); transform: translateY(-1px); }
+.card-flat { background: var(--surface2); border: none; box-shadow: none; }
+ 
+/* Form */
+.form-group { margin-bottom: 15px; }
+.form-label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; letter-spacing: .3px; }
+.form-input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface2); color: var(--text);
+  font-family: var(--sans); font-size: 14px; outline: none;
+  transition: border-color var(--t), background var(--t);
+  -webkit-appearance: none;
+}
+.form-input:focus { border-color: var(--purple); background: var(--surface); }
+.form-input::placeholder { color: var(--text3); }
+textarea.form-input { resize: vertical; min-height: 80px; line-height: 1.55; }
+select.form-input { cursor: pointer; }
+ 
+/* Badges / tags */
+.tag {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+}
+.tag-purple { background: var(--surface2); color: var(--purple); border: 1px solid var(--border); }
+.tag-blue   { background: #dceef9; color: #1a4a6b; }
+.tag-green  { background: #d4f4e6; color: #0f5a3a; }
+.tag-low    { background: #A8E6CF; color: #0a3d26; }
+.tag-med    { background: #FAC775; color: #4a2a00; }
+.tag-high   { background: #F7C1C1; color: #5a1010; }
+.dark .tag-low  { background: #1a4a35; color: #A8E6CF; }
+.dark .tag-med  { background: #4a3010; color: #FAC775; }
+.dark .tag-high { background: #4a1515; color: #F7C1C1; }
+.dark .tag-blue { background: #1a3050; color: #A7C7E7; }
+ 
+/* Sidebar item (shared between sidebar + drawer) */
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: var(--r-sm);
+  cursor: pointer; color: var(--text2); font-size: 14px;
+  margin-bottom: 2px;
+  transition: background var(--t), color var(--t);
+  border: none; background: none; width: 100%; text-align: left;
+  font-family: var(--sans);
+}
+.sidebar-item:hover { background: var(--surface2); color: var(--text); }
+.sidebar-item.active { background: var(--surface2); color: var(--purple); font-weight: 500; }
+.si-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+ 
+/* Section label (sidebar) */
+.s-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--text3); padding: 0 10px; margin: 14px 0 5px;
+  display: block;
+}
+ 
+/* ============================================================
+   PAGES & LAYOUTS
+   ============================================================ */
+.page {
+  display: none;
+  min-height: 100vh;
+  padding-top: var(--nav-h);
+}
+.page.active { display: block; }
+ 
+/* App layout (sidebar + main) */
+.app-layout { display: flex; min-height: calc(100vh - var(--nav-h)); }
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface); border-right: 1px solid var(--border);
+  padding: 14px 10px; flex-shrink: 0;
+  position: sticky; top: var(--nav-h);
+  height: calc(100vh - var(--nav-h)); overflow-y: auto;
+  transition: background var(--t), border-color var(--t);
+}
+.main { flex: 1; padding: 24px; overflow-y: auto; min-width: 0; }
+ 
+/* Section titles */
+.page-title {
+  font-family: var(--serif); font-size: 22px;
+  font-weight: 300; font-style: italic;
+  margin-bottom: 4px; line-height: 1.3;
+}
+.page-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+ 
+/* Grids */
+.grid2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+ 
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+.search-wrap { position: relative; margin-bottom: 18px; }
+.search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text3); pointer-events: none; }
+.search-input {
+  width: 100%; padding: 10px 14px 10px 40px;
+  border: 1px solid var(--border); border-radius: var(--r);
+  background: var(--surface); color: var(--text);
+  font-family: var(--sans); font-size: 14px; outline: none;
+  transition: border-color var(--t), box-shadow var(--t);
+}
+.search-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,92,191,.1); }
+.search-input::placeholder { color: var(--text3); }
+.no-results { text-align: center; padding: 32px 16px; color: var(--text3); font-size: 14px; display: none; }
+ 
+/* ============================================================
+   LANDING PAGE
+   ============================================================ */
+.hero {
+  min-height: calc(100vh - var(--nav-h));
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 40px 24px;
+}
+.hero-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-lt), var(--blue));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; margin: 0 auto 24px;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(34px, 5.5vw, 54px);
+  font-weight: 300; font-style: italic;
+  color: var(--text); line-height: 1.15; margin-bottom: 14px;
+}
+.hero h1 span { color: var(--purple); }
+.hero-sub { font-size: 16px; color: var(--text2); max-width: 380px; line-height: 1.7; margin-bottom: 30px; }
+.hero-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 48px; }
+.hero-feats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; max-width: 540px; width: 100%; }
+.hero-feat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px 14px; text-align: center;
+  transition: all var(--t);
+}
+.hero-feat:hover { border-color: var(--purple); transform: translateY(-2px); }
+.hero-feat-icon { font-size: 24px; margin-bottom: 8px; }
+.hero-feat p { font-size: 12px; color: var(--text2); line-height: 1.55; }
+ 
+/* ============================================================
+   AUTH PAGES
+   ============================================================ */
+.auth-wrap {
+  min-height: calc(100vh - var(--nav-h));
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 20px;
+}
+.auth-card { width: 360px; max-width: 100%; }
+.auth-head { margin-bottom: 22px; }
+.auth-head h2 { font-family: var(--serif); font-size: 24px; font-weight: 300; font-style: italic; margin-bottom: 4px; }
+.auth-head p { font-size: 13px; color: var(--text2); }
+.divider {
+  text-align: center; font-size: 12px; color: var(--text3);
+  margin: 12px 0; position: relative;
+}
+.divider::before, .divider::after {
+  content: ''; position: absolute; top: 50%;
+  width: 40%; height: 1px; background: var(--border);
+}
+.divider::before { left: 0; } .divider::after { right: 0; }
+.google-btn {
+  width: 100%; padding: 10px; border: 1px solid var(--border2);
+  background: var(--surface); border-radius: var(--r-sm);
+  color: var(--text); font-family: var(--sans); font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px;
+  transition: all var(--t); margin-bottom: 12px;
+}
+.google-btn:hover { background: var(--surface2); }
+.g-badge {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: linear-gradient(135deg,#4285f4,#ea4335,#fbbc05,#34a853);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.err-msg {
+  background: #fff0f0; border: 1px solid #ffc0c0;
+  border-radius: var(--r-sm); padding: 10px 14px;
+  font-size: 13px; color: #cc3333; margin-bottom: 12px; display: none;
+}
+.dark .err-msg { background: #3a1515; border-color: #7a2a2a; color: #f09595; }
+.auth-foot { text-align: center; font-size: 13px; color: var(--text2); margin-top: 14px; }
+.auth-foot a { color: var(--purple); text-decoration: none; }
+.auth-foot a:hover { text-decoration: underline; }
+ 
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 11px; margin-bottom: 18px; }
+.stat-card {
+  background: var(--surface2); border-radius: var(--r-sm); padding: 14px 15px;
+  cursor: pointer; transition: all var(--t);
+}
+.stat-card:hover { background: var(--surface3); }
+.stat-lbl { font-size: 11px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .7px; }
+.stat-val { font-size: 22px; font-weight: 500; color: var(--text); }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+ 
+/* Mood chart */
+.mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 72px; margin: 8px 0; }
+.chart-bar { flex: 1; border-radius: 4px 4px 0 0; min-width: 0; transition: height .4s ease, background .4s; }
+.chart-labs { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); }
+ 
+/* Risk bar */
+.risk-bar { height: 8px; border-radius: 4px; background: var(--surface3); overflow: hidden; margin: 10px 0; }
+.risk-fill { height: 100%; border-radius: 4px; transition: width .5s ease, background .5s; }
+.risk-btns { display: flex; gap: 6px; margin-bottom: 10px; }
+.risk-btn {
+  padding: 5px 12px; border-radius: 7px; font-size: 12px;
+  border: 1px solid var(--border); background: none;
+  color: var(--text2); cursor: pointer; font-family: var(--sans);
+  transition: all var(--t);
+}
+.risk-btn:hover { background: var(--surface2); }
+.risk-btn.rl { border-color: #A8E6CF; color: #0a3d26; }
+.risk-btn.rm { border-color: #FAC775; color: #4a2a00; }
+.risk-btn.rh { border-color: #F7C1C1; color: #5a1010; }
+.dark .risk-btn.rl { color: #A8E6CF; } .dark .risk-btn.rm { color: #FAC775; } .dark .risk-btn.rh { color: #F7C1C1; }
+ 
+/* ============================================================
+   CHAT PAGE
+   ============================================================ */
+.chat-page { display: none; height: 100vh; padding-top: var(--nav-h); overflow: hidden; }
+.chat-page.active { display: flex; }
+.chat-layout { display: flex; flex: 1; overflow: hidden; }
+.chat-sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; flex-shrink: 0; overflow-y: auto; }
+.chat-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.chat-header {
+  padding: 12px 18px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 10px;
+}
+.chat-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--purple-lt), var(--blue));
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.chat-area { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+.msg-row { display: flex; flex-direction: column; gap: 3px; }
+.msg-row.user { align-items: flex-end; }
+.msg-row.ai   { align-items: flex-start; }
+.msg-sender { font-size: 11px; color: var(--text3); padding: 0 4px; }
+.bubble { max-width: 72%; padding: 11px 15px; border-radius: 16px; font-size: 14px; line-height: 1.6; }
+.bubble-user { background: var(--purple); color: #fff; border-bottom-right-radius: 4px; }
+.bubble-ai { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
+.bubble-alert {
+  max-width: 86%; padding: 13px 16px; border-radius: var(--r-sm);
+  background: #fff0f0; border: 1px solid #ffc0c0; color: #5a0000; font-size: 13px; line-height: 1.6;
+}
+.dark .bubble-alert { background: #3a1515; border-color: #7a2a2a; color: #f09595; }
+ 
+.typing-bubble { display: flex; gap: 5px; padding: 12px 15px; }
+.typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); animation: bounce .9s infinite; }
+.typing-dot:nth-child(2) { animation-delay: .18s; }
+.typing-dot:nth-child(3) { animation-delay: .36s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+ 
+.rec-bar {
+  display: none; padding: 8px 18px; background: #fff0f0;
+  border-top: 1px solid #ffc0c0; font-size: 12px; color: #cc3333;
+  align-items: center; gap: 8px; flex-shrink: 0;
+}
+.rec-bar.show { display: flex; }
+.rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--alert); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+ 
+.chat-footer { padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
+.chat-input-row { display: flex; gap: 8px; align-items: center; }
+.chat-input {
+  flex: 1; padding: 10px 16px; border: 1px solid var(--border);
+  border-radius: 24px; background: var(--surface2); color: var(--text);
+  font-family: var(--sans); font-size: 14px; outline: none;
+  transition: border-color var(--t);
+}
+.chat-input:focus { border-color: var(--purple); }
+.chat-input::placeholder { color: var(--text3); }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; cursor: pointer; transition: all var(--t);
+}
+.voice-btn { background: none; border: 1px solid var(--border2); color: var(--text2); }
+.voice-btn:hover { background: var(--surface2); border-color: var(--purple); }
+.voice-btn.rec { background: var(--alert); border-color: var(--alert); color: #fff; }
+.send-btn { background: var(--purple); border: none; color: #fff; }
+.send-btn:hover { opacity: .85; }
+.send-btn:active { transform: scale(.93); }
+ 
+/* ============================================================
+   PROFESSIONALS PAGE
+   ============================================================ */
+.pro-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px 18px;
+  display: flex; gap: 14px; align-items: center;
+  margin-bottom: 10px; transition: all var(--t);
+}
+.pro-card:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+.pro-avatar {
+  width: 50px; height: 50px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.pro-info { flex: 1; min-width: 0; }
+.pro-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.pro-role { font-size: 12px; color: var(--text2); margin-bottom: 7px; }
+.pro-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.pro-actions { display: flex; gap: 7px; flex-shrink: 0; }
+ 
+/* ============================================================
+   FACILITIES PAGE
+   ============================================================ */
+.map-box {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 20px; text-align: center; margin-bottom: 18px;
+}
+.map-grid-bg { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; opacity: .25; margin-bottom: 12px; }
+.map-tile { height: 54px; background: var(--border); border-radius: 6px; }
+.fask-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px;
+  display: flex; gap: 14px; align-items: center;
+  margin-bottom: 10px; transition: all var(--t);
+}
+.fask-card:hover { border-color: var(--border2); }
+.fask-icon { font-size: 26px; flex-shrink: 0; }
+.fask-info { flex: 1; min-width: 0; }
+.fask-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.fask-meta { font-size: 12px; color: var(--text2); }
+.fask-actions { display: flex; gap: 7px; flex-shrink: 0; }
+ 
+/* ============================================================
+   CRISIS PAGE
+   ============================================================ */
+.crisis-wrap {
+  min-height: calc(100vh - var(--nav-h));
+  background: #4a0000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 24px;
+}
+.crisis-box { max-width: 400px; width: 100%; text-align: center; }
+.crisis-icon { font-size: 52px; margin-bottom: 18px; animation: pulse 2s infinite; }
+.crisis-box h2 { font-family: var(--serif); font-size: 26px; font-weight: 300; font-style: italic; color: #fff; margin-bottom: 10px; }
+.crisis-box p { font-size: 14px; color: #ffb3b3; line-height: 1.7; margin-bottom: 24px; }
+.crisis-btns { display: flex; flex-direction: column; gap: 10px; max-width: 280px; margin: 0 auto; }
+.crisis-hotline { font-size: 13px; color: #ff8888; margin-top: 16px; padding: 12px; background: rgba(255,255,255,.07); border-radius: var(--r-sm); }
+.crisis-back { margin-top: 14px; background: none; border: 1px solid rgba(255,255,255,.2); color: #ffb3b3; padding: 8px 20px; border-radius: 8px; font-family: var(--sans); font-size: 13px; cursor: pointer; transition: all var(--t); }
+.crisis-back:hover { background: rgba(255,255,255,.1); }
+ 
+/* ============================================================
+   MODALS
+   ============================================================ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.5); z-index: 1000;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 22px;
+  width: 100%; max-width: 340px; max-height: 90vh; overflow-y: auto;
+}
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-title { font-size: 16px; font-weight: 500; }
+.modal-close {
+  background: none; border: none; font-size: 18px; color: var(--text3);
+  cursor: pointer; line-height: 1; padding: 4px; border-radius: 6px;
+  transition: background var(--t);
+}
+.modal-close:hover { background: var(--surface2); }
+ 
+/* Mood picker */
+.mood-row { display: flex; gap: 7px; margin: 10px 0 14px; }
+.mood-btn {
+  flex: 1; height: 44px; border-radius: 9px;
+  border: 2px solid transparent; background: var(--surface2);
+  font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--t);
+}
+.mood-btn:hover { border-color: var(--border2); transform: scale(1.06); }
+.mood-btn.sel { border-color: var(--purple); background: var(--surface3); }
+ 
+/* Breathing */
+.breathe-circle {
+  width: 90px; height: 90px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple-lt));
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+  transition: transform 2s ease-in-out;
+}
+.breathe-circle.expand { transform: scale(1.55); }
+.breath-text { font-size: 14px; color: var(--text2); text-align: center; min-height: 22px; margin-bottom: 14px; }
+ 
+/* Time slots */
+.slot-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin: 8px 0 14px; }
+.slot-btn {
+  padding: 8px; border: 1px solid var(--border); border-radius: 7px;
+  text-align: center; font-size: 12px; cursor: pointer;
+  background: none; color: var(--text2); font-family: var(--sans);
+  transition: all var(--t);
+}
+.slot-btn:hover, .slot-btn.sel { background: var(--purple); color: #fff; border-color: var(--purple); }
+ 
+/* Coping tool list */
+.coping-item {
+  text-align: left; width: 100%; cursor: pointer;
+  background: var(--surface2); border: none;
+  border-radius: var(--r-sm); padding: 14px;
+  margin-bottom: 8px; transition: all var(--t);
+}
+.coping-item:hover { background: var(--surface3); }
+.coping-item-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; font-family: var(--sans); color: var(--text); }
+.coping-item-sub { font-size: 12px; color: var(--text2); font-family: var(--sans); }
+ 
+/* Ground steps */
+.ground-step {
+  background: var(--surface2); border-radius: var(--r-sm);
+  padding: 10px 14px; margin-bottom: 8px; font-size: 14px; line-height: 1.5;
+}
+.ground-step strong { color: var(--purple); }
+ 
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 11px 18px;
+  font-size: 13px; color: var(--text);
+  box-shadow: var(--shadow); z-index: 2000;
+  transform: translateY(80px); opacity: 0;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+ 
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+.fade-in { animation: fadeIn .28s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+ 
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+ 
+/* ============================================================
+   RESPONSIVE — MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Nav */
+  .navbar { padding: 0 14px; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; align-items: center; justify-content: center; }
+  .btn-nav { display: none; }
+  .pill-btn .lang-text { display: none; }  /* hide lang label on mobile, keep dot */
+  /* theme btn always shows icon — no change needed */
+ 
+  /* Sidebar & bottom nav */
+  .sidebar, .chat-sidebar { display: none; }
+  .bottom-nav { display: flex; }
+ 
+  /* Page padding for bottom nav */
+  .page { padding-bottom: var(--bnav-h); }
+  .chat-page { padding-bottom: var(--bnav-h); }
+  .chat-footer { padding-bottom: 10px; }
+ 
+  /* Layouts */
+  .main { padding: 16px; }
+  .grid2 { grid-template-columns: 1fr; }
+  .grid3 { grid-template-columns: 1fr; }
+  .grid4 { grid-template-columns: repeat(2,1fr); }
+  .stat-grid { grid-template-columns: repeat(2,1fr); gap: 9px; }
+ 
+  /* Hero */
+  .hero { padding: 28px 20px; }
+  .hero h1 { font-size: 30px; }
+  .hero-sub { font-size: 14px; }
+  .hero-btns { flex-direction: column; align-items: stretch; width: 100%; max-width: 280px; }
+  .hero-feats { grid-template-columns: 1fr; max-width: 100%; }
+  .btn-lg { padding: 13px 24px; }
+ 
+  /* Auth */
+  .auth-wrap { padding: 24px 16px; align-items: flex-start; padding-top: 32px; }
+  .auth-card { max-width: 100%; }
+ 
+  /* Pro & Faskes cards */
+  .pro-card { flex-wrap: wrap; }
+  .pro-actions { width: 100%; justify-content: flex-end; margin-top: 8px; }
+  .fask-card { flex-wrap: wrap; }
+  .fask-actions { width: 100%; justify-content: flex-end; margin-top: 6px; }
+ 
+  /* Chat */
+  .chat-header { padding: 10px 14px; gap: 8px; }
+  .chat-header > div:last-child { gap: 5px; }
+  .chat-header .btn-sm { padding: 5px 8px; font-size: 11px; }
+  .chat-area { padding: 14px; }
+  .bubble { max-width: 88%; }
+ 
+  /* Stat cards */
+  .stat-val { font-size: 18px; }
+  .stat-card { padding: 12px 13px; }
+ 
+  /* Toast above bottom nav */
+  .toast { bottom: calc(var(--bnav-h) + 12px); right: 12px; left: 12px; }
+ 
+  /* Modal as bottom sheet */
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal-box { border-radius: 16px 16px 0 0; max-width: 100%; max-height: 90vh; }
+}
+ 
+@media (max-width: 400px) {
+  .stat-grid { grid-template-columns: repeat(2,1fr); }
+  .hero h1 { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+ 
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="navbar">
+  <div class="nav-left">
+    <button class="hamburger" onclick="openDrawer()" aria-label="Menu">☰</button>
+    <a class="nav-logo" onclick="go('landing')">calmy</a>
+  </div>
+  <div class="nav-links">
+    <button class="nav-link" onclick="go('dashboard')" data-page="dashboard">Dashboard</button>
+    <button class="nav-link" onclick="go('chat')"      data-page="chat">Chat</button>
+    <button class="nav-link" onclick="go('pros')"      data-page="pros">Professionals</button>
+    <button class="nav-link" onclick="go('faskes')"    data-page="faskes">Facilities</button>
+  </div>
+  <div class="nav-controls">
+    <button class="pill-btn" onclick="toggleLang()">
+      <span class="pill-dot"></span>
+      <span class="lang-text" id="lang-lbl">EN</span>
+    </button>
+    <button class="pill-btn" onclick="toggleDark()" style="min-width:36px;justify-content:center">
+      <span id="theme-icon">☀️</span>
+    </button>
+    <button class="btn-nav" id="auth-btn" onclick="handleAuth()">Login</button>
+  </div>
+</nav>
+ 
+<!-- ============================================================
+     MOBILE DRAWER
+     ============================================================ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="drawer-logo">calmy</span>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <span class="drawer-section" id="dr-main">Main</span>
+    <button class="sidebar-item" onclick="go('dashboard');closeDrawer()"><span class="si-icon">📊</span><span id="dr-dash">Dashboard</span></button>
+    <button class="sidebar-item" onclick="go('chat');closeDrawer()"><span class="si-icon">💬</span><span id="dr-chat">Chat</span></button>
+    <span class="drawer-section" id="dr-support">Support</span>
+    <button class="sidebar-item" onclick="go('pros');closeDrawer()"><span class="si-icon">👨‍⚕️</span><span id="dr-pros">Professionals</span></button>
+    <button class="sidebar-item" onclick="go('faskes');closeDrawer()"><span class="si-icon">🏥</span><span id="dr-fask">Facilities</span></button>
+    <span class="drawer-section" id="dr-tools">Tools</span>
+    <button class="sidebar-item" onclick="openModal('mood-modal');closeDrawer()"><span class="si-icon">😊</span><span id="dr-mood">Log mood</span></button>
+    <button class="sidebar-item" onclick="openModal('coping-modal');closeDrawer()"><span class="si-icon">🧘</span><span id="dr-coping">Coping tools</span></button>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-outline btn-block" onclick="handleAuth();closeDrawer()" id="drawer-auth-btn">Login</button>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     MOBILE BOTTOM NAV
+     ============================================================ -->
+<nav class="bottom-nav">
+  <button class="bnav-btn" onclick="go('dashboard')" data-bnav="dashboard"><span class="bnav-icon">📊</span><span id="bn-home">Home</span></button>
+  <button class="bnav-btn" onclick="go('chat')"      data-bnav="chat">     <span class="bnav-icon">💬</span><span id="bn-chat">Chat</span></button>
+  <button class="bnav-btn" onclick="go('pros')"      data-bnav="pros">     <span class="bnav-icon">👨‍⚕️</span><span id="bn-pros">Pros</span></button>
+  <button class="bnav-btn" onclick="go('faskes')"    data-bnav="faskes">   <span class="bnav-icon">🏥</span><span id="bn-fask">Faskes</span></button>
+</nav>
+ 
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+<div class="toast" id="toast"></div>
+ 
+<!-- ============================================================
+     PAGE: LANDING
+     ============================================================ -->
+<div class="page active" id="page-landing">
+  <div class="hero">
+    <div class="hero-icon">🌿</div>
+    <h1 id="hero-title">A calm space<br><span>for your mind</span></h1>
+    <p class="hero-sub" id="hero-sub">AI-powered mental wellness support. Talk, reflect, and find your path to healing — in a safe, private space.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary btn-lg" onclick="go('login')" id="hero-cta">Start sharing</button>
+      <button class="btn btn-outline btn-lg" onclick="go('dashboard')" id="hero-demo">See demo</button>
+    </div>
+    <div class="hero-feats">
+      <div class="hero-feat">
+        <div class="hero-feat-icon">💬</div>
+        <p id="feat-1">AI Chat Support — talk anytime, no judgment</p>
+      </div>
+      <div class="hero-feat">
+        <div class="hero-feat-icon">🧘</div>
+        <p id="feat-2">Coping Tools — breathing, grounding, journaling</p>
+      </div>
+      <div class="hero-feat">
+        <div class="hero-feat-icon">👨‍⚕️</div>
+        <p id="feat-3">Professional Referrals — connect when you're ready</p>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: LOGIN
+     ============================================================ -->
+<div class="page" id="page-login">
+  <div class="auth-wrap">
+    <div class="card auth-card">
+      <div class="auth-head">
+        <h2 id="login-h">Welcome back</h2>
+        <p id="login-sub">Sign in to continue your journey</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="login-name-lbl">Your name</label>
+        <input class="form-input" type="text" id="login-name" placeholder="e.g. Andi">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="login-email-lbl">Email</label>
+        <input class="form-input" type="email" id="login-email" placeholder="you@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="login-pass-lbl">Password</label>
+        <input class="form-input" type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="err-msg" id="login-err">⚠️ Incorrect password. Please try again.</div>
+      <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-bottom:10px" id="login-btn">Sign in</button>
+      <div class="divider" id="login-or">or</div>
+      <button class="google-btn" onclick="doGoogleLogin()">
+        <span class="g-badge">G</span>
+        <span id="google-lbl">Continue with Google</span>
+      </button>
+      <p class="auth-foot" id="login-foot">No account? <a href="#" onclick="go('register');return false" id="login-reg-link">Register now</a></p>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: REGISTER
+     ============================================================ -->
+<div class="page" id="page-register">
+  <div class="auth-wrap">
+    <div class="card auth-card">
+      <div class="auth-head">
+        <h2 id="reg-h">Create your account</h2>
+        <p id="reg-sub">Join Calmy — free and confidential</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="reg-name-lbl">Full name</label>
+        <input class="form-input" type="text" id="reg-name" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="reg-email-lbl">Email</label>
+        <input class="form-input" type="email" placeholder="you@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="reg-pass-lbl">Password</label>
+        <input class="form-input" type="password" placeholder="At least 8 characters">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="reg-focus-lbl">I'm seeking support for</label>
+        <select class="form-input">
+          <option id="reg-opt1">Anxiety &amp; Stress</option>
+          <option id="reg-opt2">Depression</option>
+          <option id="reg-opt3">Relationship issues</option>
+          <option id="reg-opt4">Grief &amp; Loss</option>
+          <option id="reg-opt5">General wellbeing</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="doRegister()" style="margin-bottom:10px" id="reg-btn">Create account</button>
+      <p class="auth-foot" id="reg-foot">Already have one? <a href="#" onclick="go('login');return false" id="reg-login-link">Sign in</a></p>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: DASHBOARD
+     ============================================================ -->
+<div class="page" id="page-dashboard">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <span class="s-label" id="sb-main-lbl">Main</span>
+      <button class="sidebar-item active" onclick="go('dashboard')" data-sb="dashboard"><span class="si-icon">📊</span><span id="sb-dash">Dashboard</span></button>
+      <button class="sidebar-item" onclick="go('chat')" data-sb="chat"><span class="si-icon">💬</span><span id="sb-chat">Chat</span></button>
+      <span class="s-label" id="sb-support-lbl">Support</span>
+      <button class="sidebar-item" onclick="go('pros')" data-sb="pros"><span class="si-icon">👨‍⚕️</span><span id="sb-pros">Professionals</span></button>
+      <button class="sidebar-item" onclick="go('faskes')" data-sb="faskes"><span class="si-icon">🏥</span><span id="sb-fask">Facilities</span></button>
+      <span class="s-label" id="sb-tools-lbl">Tools</span>
+      <button class="sidebar-item" onclick="openModal('mood-modal')"><span class="si-icon">😊</span><span id="sb-mood">Log mood</span></button>
+      <button class="sidebar-item" onclick="openModal('coping-modal')"><span class="si-icon">🧘</span><span id="sb-coping">Coping tools</span></button>
+    </aside>
+    <div class="main fade-in">
+      <p id="dash-greeting" style="font-size:13px;color:var(--text2);margin-bottom:18px">Good morning 👋 How are you feeling today?</p>
+ 
+      <!-- Stat cards -->
+      <div class="stat-grid">
+        <div class="stat-card" onclick="openModal('mood-modal')">
+          <div class="stat-lbl" id="stat-mood-lbl">Today's mood</div>
+          <div class="stat-val" id="stat-mood-val">😐</div>
+          <div class="stat-sub" id="stat-mood-sub">Tap to update</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl" id="stat-sess-lbl">Sessions</div>
+          <div class="stat-val">12</div>
+          <div class="stat-sub" id="stat-sess-sub">This month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl" id="stat-streak-lbl">Streak</div>
+          <div class="stat-val">7</div>
+          <div class="stat-sub" id="stat-streak-sub">Days in a row</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Risk level</div>
+          <div class="stat-val"><span class="tag tag-low" id="risk-badge">Low</span></div>
+          <div class="stat-sub" id="risk-sub">Stable</div>
+        </div>
+      </div>
+ 
+      <div class="grid2" style="margin-bottom:16px">
+        <!-- Mood chart -->
+        <div class="card card-hover" onclick="showToast(T[lang].chartExpand)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-size:14px;font-weight:500" id="chart-lbl">Mood this week</span>
+            <span style="font-size:11px;color:var(--text3)" id="chart-expand">Tap to expand</span>
+          </div>
+          <div class="mini-chart" id="mini-chart"></div>
+          <div class="chart-labs">
+            <span id="cl-mon">Mon</span><span id="cl-tue">Tue</span><span id="cl-wed">Wed</span>
+            <span id="cl-thu">Thu</span><span id="cl-fri">Fri</span><span id="cl-sat">Sat</span><span id="cl-sun">Sun</span>
+          </div>
+        </div>
+        <!-- Risk simulator -->
+        <div class="card">
+          <div style="font-size:14px;font-weight:500;margin-bottom:10px" id="risk-lbl">Risk indicator</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px" id="risk-sim-lbl">Simulate state:</div>
+          <div class="risk-btns">
+            <button class="risk-btn rl" onclick="setRisk('low')"    id="rb-low">Low</button>
+            <button class="risk-btn rm" onclick="setRisk('medium')" id="rb-med">Medium</button>
+            <button class="risk-btn rh" onclick="setRisk('high')"   id="rb-high">High</button>
+          </div>
+          <div class="risk-bar"><div class="risk-fill" id="risk-fill" style="width:20%;background:#A8E6CF"></div></div>
+          <div style="font-size:12px;color:var(--text2)" id="risk-txt">Stable — keep going!</div>
+        </div>
+      </div>
+ 
+      <!-- Recent sessions -->
+      <div class="card">
+        <div style="font-size:14px;font-weight:500;margin-bottom:12px" id="hist-lbl">Recent sessions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="card card-flat card-sm card-hover" onclick="go('chat')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:500" id="sess1-title">Session with Calmy AI</div>
+                <div style="font-size:11px;color:var(--text3)" id="sess1-meta">Yesterday, 9:42 PM · 14 messages</div>
+              </div>
+              <span class="tag tag-low" style="font-size:10px" id="sess1-tag">Low risk</span>
+            </div>
+          </div>
+          <div class="card card-flat card-sm card-hover" onclick="go('chat')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:500" id="sess2-title">Breathing exercise</div>
+                <div style="font-size:11px;color:var(--text3)" id="sess2-meta">2 days ago · Coping tool</div>
+              </div>
+              <span class="tag tag-blue" style="font-size:10px" id="sess2-tag">Completed</span>
+            </div>
+          </div>
+          <div class="card card-flat card-sm card-hover" onclick="go('pros')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:500" id="sess3-title">Session with Dr. Sari Dewi</div>
+                <div style="font-size:11px;color:var(--text3)" id="sess3-meta">3 days ago · Professional session</div>
+              </div>
+              <span class="tag tag-purple" style="font-size:10px" id="sess3-tag">Professional</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: CHAT
+     ============================================================ -->
+<div class="chat-page" id="page-chat">
+  <div class="chat-layout">
+    <aside class="chat-sidebar">
+      <span class="s-label">Main</span>
+      <button class="sidebar-item" onclick="go('dashboard')"><span class="si-icon">📊</span>Dashboard</button>
+      <button class="sidebar-item active"><span class="si-icon">💬</span>Chat</button>
+      <span class="s-label">Support</span>
+      <button class="sidebar-item" onclick="go('pros')"><span class="si-icon">👨‍⚕️</span>Professionals</button>
+      <button class="sidebar-item" onclick="go('faskes')"><span class="si-icon">🏥</span>Facilities</button>
+      <span class="s-label">Tools</span>
+      <button class="sidebar-item" onclick="openModal('coping-modal')"><span class="si-icon">🧘</span>Coping tools</button>
+    </aside>
+    <div class="chat-main">
+      <div class="chat-header">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <div class="chat-avatar">🌿</div>
+          <div style="min-width:0">
+            <div style="font-size:14px;font-weight:500">Calmy AI</div>
+            <div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="chat-status">Always here for you</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="openModal('coping-modal')" id="chat-coping-btn">🧘 Coping</button>
+          <button class="btn btn-alert btn-sm" onclick="go('crisis')" id="chat-crisis-btn">🆘 Crisis</button>
+        </div>
+      </div>
+      <div class="chat-area" id="chat-area">
+        <div class="msg-row ai fade-in">
+          <span class="msg-sender">Calmy</span>
+          <div class="bubble bubble-ai" id="first-ai-msg">Hi there 👋 I'm really glad you're here. How are you feeling today? There's no rush — take all the time you need.</div>
+        </div>
+      </div>
+      <div class="rec-bar" id="rec-bar">
+        <span class="rec-dot"></span>
+        <span id="rec-txt">Recording... speak now</span>
+      </div>
+      <div class="chat-footer">
+        <div class="chat-input-row">
+          <button class="icon-btn voice-btn" onclick="toggleVoice()" id="voice-btn" aria-label="Voice input">🎙️</button>
+          <input class="chat-input" id="chat-in" placeholder="Share how you feel..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="icon-btn send-btn" onclick="sendMsg()" aria-label="Send">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: PROFESSIONALS
+     ============================================================ -->
+<div class="page" id="page-pros">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <span class="s-label">Main</span>
+      <button class="sidebar-item" onclick="go('dashboard')" data-sb="dashboard"><span class="si-icon">📊</span>Dashboard</button>
+      <button class="sidebar-item" onclick="go('chat')" data-sb="chat"><span class="si-icon">💬</span>Chat</button>
+      <span class="s-label">Support</span>
+      <button class="sidebar-item active" data-sb="pros"><span class="si-icon">👨‍⚕️</span>Professionals</button>
+      <button class="sidebar-item" onclick="go('faskes')" data-sb="faskes"><span class="si-icon">🏥</span>Facilities</button>
+    </aside>
+    <div class="main fade-in">
+      <p class="page-title" id="pros-title">Mental health professionals</p>
+      <p class="page-sub" id="pros-sub">Verified and compassionate — ready to support your journey</p>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" id="pros-search" oninput="filterPros()" id="pros-search-inp" placeholder="Search by name, specialty, or keyword...">
+      </div>
+      <div id="pros-no-results" class="no-results">No professionals found.</div>
+      <div id="pros-list">
+        <div class="pro-card" data-search="sari dewi psychologist anxiety depression cbt">
+          <div class="pro-avatar" style="background:linear-gradient(135deg,#A7C7E7,#dceef9)">👩‍⚕️</div>
+          <div class="pro-info">
+            <div class="pro-name">Dr. Sari Dewi, M.Psi</div>
+            <div class="pro-role">Clinical Psychologist · 8 yrs experience</div>
+            <div class="pro-tags"><span class="tag tag-purple">Anxiety</span> <span class="tag tag-purple">Depression</span> <span class="tag tag-purple">CBT</span></div>
+          </div>
+          <div class="pro-actions">
+            <button class="btn btn-outline btn-sm" onclick="openProChat('Dr. Sari Dewi, M.Psi','Clinical Psychologist','👩‍⚕️','linear-gradient(135deg,#A7C7E7,#dceef9)')">Chat</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('book-modal')">Book</button>
+          </div>
+        </div>
+        <div class="pro-card" data-search="budi santoso psychiatrist trauma ptsd medication">
+          <div class="pro-avatar" style="background:linear-gradient(135deg,#A8E6CF,#d4f4e6)">👨‍⚕️</div>
+          <div class="pro-info">
+            <div class="pro-name">Dr. Budi Santoso, Sp.KJ</div>
+            <div class="pro-role">Psychiatrist · 12 yrs experience</div>
+            <div class="pro-tags"><span class="tag tag-purple">Trauma</span> <span class="tag tag-purple">PTSD</span> <span class="tag tag-purple">Medication</span></div>
+          </div>
+          <div class="pro-actions">
+            <button class="btn btn-outline btn-sm" onclick="openProChat('Dr. Budi Santoso, Sp.KJ','Psychiatrist','👨‍⚕️','linear-gradient(135deg,#A8E6CF,#d4f4e6)')">Chat</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('book-modal')">Book</button>
+          </div>
+        </div>
+        <div class="pro-card" data-search="rina putri counselor stress family relationships">
+          <div class="pro-avatar" style="background:linear-gradient(135deg,#CBAACB,#f0d4f0)">👩‍⚕️</div>
+          <div class="pro-info">
+            <div class="pro-name">Dr. Rina Putri, M.Psi</div>
+            <div class="pro-role">Counselor · 5 yrs experience</div>
+            <div class="pro-tags"><span class="tag tag-purple">Stress</span> <span class="tag tag-purple">Family</span> <span class="tag tag-purple">Relationships</span></div>
+          </div>
+          <div class="pro-actions">
+            <button class="btn btn-outline btn-sm" onclick="openProChat('Dr. Rina Putri, M.Psi','Counselor','👩‍⚕️','linear-gradient(135deg,#CBAACB,#f0d4f0)')">Chat</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('book-modal')">Book</button>
+          </div>
+        </div>
+        <div class="pro-card" data-search="ahmad fauzi psychologist grief burnout mindfulness">
+          <div class="pro-avatar" style="background:linear-gradient(135deg,#ffd6a5,#fff0e0)">👨‍⚕️</div>
+          <div class="pro-info">
+            <div class="pro-name">Dr. Ahmad Fauzi, M.Psi</div>
+            <div class="pro-role">Psychologist · 10 yrs experience</div>
+            <div class="pro-tags"><span class="tag tag-purple">Grief</span> <span class="tag tag-purple">Burnout</span> <span class="tag tag-purple">Mindfulness</span></div>
+          </div>
+          <div class="pro-actions">
+            <button class="btn btn-outline btn-sm" onclick="openProChat('Dr. Ahmad Fauzi, M.Psi','Psychologist','👨‍⚕️','linear-gradient(135deg,#ffd6a5,#fff0e0)')">Chat</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('book-modal')">Book</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: PRO CHAT
+     ============================================================ -->
+<div class="chat-page" id="page-pro-chat">
+  <div class="chat-layout">
+    <aside class="chat-sidebar">
+      <span class="s-label">Main</span>
+      <button class="sidebar-item" onclick="go('dashboard')"><span class="si-icon">📊</span>Dashboard</button>
+      <button class="sidebar-item" onclick="go('chat')"><span class="si-icon">💬</span>AI Chat</button>
+      <span class="s-label">Support</span>
+      <button class="sidebar-item active"><span class="si-icon">👨‍⚕️</span>Pro Chat</button>
+      <button class="sidebar-item" onclick="go('faskes')"><span class="si-icon">🏥</span>Facilities</button>
+    </aside>
+    <div class="chat-main">
+      <div class="chat-header">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0">
+          <button class="btn btn-ghost btn-sm" onclick="go('pros')" style="padding:6px 8px;font-size:16px;flex-shrink:0">←</button>
+          <div class="chat-avatar" id="pro-chat-avatar" style="background:linear-gradient(135deg,#A7C7E7,#dceef9)">👩‍⚕️</div>
+          <div style="min-width:0">
+            <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="pro-chat-name">Dr. Sari Dewi, M.Psi</div>
+            <div style="font-size:11px;color:var(--text3)" id="pro-chat-role">Clinical Psychologist</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="openModal('book-modal')">📅 Book</button>
+          <button class="btn btn-primary btn-sm" onclick="go('pros')">← Back</button>
+        </div>
+      </div>
+ 
+      <!-- Info banner -->
+      <div style="background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 18px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)">
+        <span>🔒</span>
+        <span id="pro-chat-info">This is a private chat with your professional. All messages are confidential.</span>
+      </div>
+ 
+      <div class="chat-area" id="pro-chat-area"></div>
+ 
+      <div class="chat-footer">
+        <div class="chat-input-row">
+          <input class="chat-input" id="pro-chat-in" placeholder="Message your professional..." onkeydown="if(event.key==='Enter')sendProMsg()">
+          <button class="icon-btn send-btn" onclick="sendProMsg()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: FACILITIES
+     ============================================================ -->
+<div class="page" id="page-faskes">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <span class="s-label">Main</span>
+      <button class="sidebar-item" onclick="go('dashboard')" data-sb="dashboard"><span class="si-icon">📊</span>Dashboard</button>
+      <button class="sidebar-item" onclick="go('chat')" data-sb="chat"><span class="si-icon">💬</span>Chat</button>
+      <span class="s-label">Support</span>
+      <button class="sidebar-item" onclick="go('pros')" data-sb="pros"><span class="si-icon">👨‍⚕️</span>Professionals</button>
+      <button class="sidebar-item active" data-sb="faskes"><span class="si-icon">🏥</span>Facilities</button>
+    </aside>
+    <div class="main fade-in">
+      <p class="page-title" id="fask-title">Health facilities nearby</p>
+      <p class="page-sub" id="fask-sub">Semarang, Central Java — 4 facilities found</p>
+      <div class="map-box">
+        <div class="map-grid-bg">
+          <div class="map-tile"></div><div class="map-tile"></div>
+          <div class="map-tile"></div><div class="map-tile"></div>
+        </div>
+        <div style="font-size:28px;margin-bottom:6px">📍</div>
+        <div style="font-size:13px;color:var(--text2)" id="map-txt">Map view · Semarang, Central Java</div>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" id="fask-search" oninput="filterFaskes()" placeholder="Search facilities...">
+      </div>
+      <div id="fask-no-results" class="no-results">No facilities found.</div>
+      <div id="fask-list">
+        <div class="fask-card" data-search="rsud kariadi psychiatry rumah sakit">
+          <div class="fask-icon">🏥</div>
+          <div class="fask-info">
+            <div class="fask-name">RSUD Dr. Kariadi</div>
+            <div class="fask-meta">Psychiatry Department · 2.3 km · Open until 21:00</div>
+          </div>
+          <div class="fask-actions">
+            <button class="btn btn-green btn-sm" onclick="openModal('nav-modal')">Navigate</button>
+            <button class="btn btn-outline btn-sm" onclick="openModal('call-modal')">Call</button>
+          </div>
+        </div>
+        <div class="fask-card" data-search="puskesmas banyumanik klinik clinic">
+          <div class="fask-icon">🏨</div>
+          <div class="fask-info">
+            <div class="fask-name">Puskesmas Banyumanik</div>
+            <div class="fask-meta">Mental Health Clinic · 1.1 km · Open until 16:00</div>
+          </div>
+          <div class="fask-actions">
+            <button class="btn btn-green btn-sm" onclick="openModal('nav-modal')">Navigate</button>
+            <button class="btn btn-outline btn-sm" onclick="openModal('call-modal')">Call</button>
+          </div>
+        </div>
+        <div class="fask-card" data-search="klinik jiwa sehat private swasta">
+          <div class="fask-icon">🧠</div>
+          <div class="fask-info">
+            <div class="fask-name">Klinik Jiwa Sehat</div>
+            <div class="fask-meta">Private Clinic · 3.7 km · Open 24 hrs</div>
+          </div>
+          <div class="fask-actions">
+            <button class="btn btn-green btn-sm" onclick="openModal('nav-modal')">Navigate</button>
+            <button class="btn btn-outline btn-sm" onclick="openModal('call-modal')">Call</button>
+          </div>
+        </div>
+        <div class="fask-card" data-search="rsj amino gondohutomo psychiatric hospital rumah sakit jiwa">
+          <div class="fask-icon">🏛️</div>
+          <div class="fask-info">
+            <div class="fask-name">RSJ Dr. Amino Gondohutomo</div>
+            <div class="fask-meta">Psychiatric Hospital · 6.1 km · Open 24 hrs</div>
+          </div>
+          <div class="fask-actions">
+            <button class="btn btn-green btn-sm" onclick="openModal('nav-modal')">Navigate</button>
+            <button class="btn btn-outline btn-sm" onclick="openModal('call-modal')">Call</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     PAGE: CRISIS
+     ============================================================ -->
+<div class="page" id="page-crisis">
+  <div class="crisis-wrap">
+    <div class="crisis-box fade-in">
+      <div class="crisis-icon">🆘</div>
+      <h2 id="crisis-h">You are not alone</h2>
+      <p id="crisis-p">We noticed signs of distress in your recent messages. Please know that help is available right now — you don't have to face this alone.</p>
+      <div class="crisis-btns">
+        <button class="btn" style="background:#fff;color:#7a1a1a;font-size:15px;padding:14px;border-radius:var(--r);width:100%" onclick="callHotline()">📞 Call hotline now</button>
+        <button class="btn btn-alert" style="font-size:15px;padding:14px;border-radius:var(--r);width:100%" onclick="go('faskes')">🏥 Get help nearby</button>
+        <button class="btn" style="font-size:14px;padding:12px;border-radius:var(--r);width:100%;border:1px solid rgba(255,255,255,.3);color:#ffb3b3;background:none" onclick="go('pros')">👨‍⚕️ Talk to a professional</button>
+      </div>
+      <div class="crisis-hotline">
+        <div style="font-size:12px;color:#ffaaaa;margin-bottom:4px">🇮🇩 Into The Light Indonesia</div>
+        <div style="font-size:17px;color:#fff;font-weight:500">119 ext. 8</div>
+        <div style="font-size:11px;color:#ff8888;margin-top:4px">Available 24/7 — free &amp; confidential</div>
+      </div>
+      <button class="crisis-back" onclick="go('chat')" id="crisis-back">← Back to chat</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     MODALS
+     ============================================================ -->
+ 
+<!-- Mood log -->
+<div class="modal-overlay" id="mood-modal" onclick="if(event.target===this)closeModal('mood-modal')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="mood-title">How are you feeling?</span>
+      <button class="modal-close" onclick="closeModal('mood-modal')">✕</button>
+    </div>
+    <div class="mood-row">
+      <button class="mood-btn" onclick="selMood(this,'😭')">😭</button>
+      <button class="mood-btn" onclick="selMood(this,'😔')">😔</button>
+      <button class="mood-btn sel" onclick="selMood(this,'😐')">😐</button>
+      <button class="mood-btn" onclick="selMood(this,'🙂')">🙂</button>
+      <button class="mood-btn" onclick="selMood(this,'😊')">😊</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="mood-note-lbl">Add a note (optional)</label>
+      <textarea class="form-input" placeholder="What's on your mind today?"></textarea>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveMood()" id="mood-save">Save</button>
+      <button class="btn btn-outline" onclick="closeModal('mood-modal')" id="mood-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Coping tools -->
+<div class="modal-overlay" id="coping-modal" onclick="if(event.target===this)closeModal('coping-modal')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="coping-title">Coping tools</span>
+      <button class="modal-close" onclick="closeModal('coping-modal')">✕</button>
+    </div>
+    <button class="coping-item" onclick="openBreath()">
+      <div class="coping-item-title">🌬️ <span id="ct-breath-t">Breathing exercise</span></div>
+      <div class="coping-item-sub" id="ct-breath-s">4-7-8 calm breathing technique</div>
+    </button>
+    <button class="coping-item" onclick="openGrounding()">
+      <div class="coping-item-title">🌍 <span id="ct-ground-t">5-4-3-2-1 Grounding</span></div>
+      <div class="coping-item-sub" id="ct-ground-s">Reconnect with the present moment</div>
+    </button>
+    <button class="coping-item" onclick="closeModal('coping-modal');showToast(T[lang].journalToast)">
+      <div class="coping-item-title">📓 <span id="ct-journal-t">Journal</span></div>
+      <div class="coping-item-sub" id="ct-journal-s">Write your thoughts freely</div>
+    </button>
+    <button class="btn btn-outline btn-block" style="margin-top:4px" onclick="closeModal('coping-modal')" id="coping-close">Close</button>
+  </div>
+</div>
+ 
+<!-- Breathing -->
+<div class="modal-overlay" id="breath-modal" onclick="if(event.target===this)closeModal('breath-modal')">
+  <div class="modal-box" style="text-align:center">
+    <div class="modal-head" style="justify-content:flex-end">
+      <button class="modal-close" onclick="stopBreath()">✕</button>
+    </div>
+    <div style="font-size:16px;font-weight:500;margin-bottom:16px" id="breath-modal-title">Breathing exercise</div>
+    <div class="breathe-circle" id="breathe-circle">🌬️</div>
+    <div class="breath-text" id="breath-text">Press start to begin</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-blue" onclick="startBreath()" id="start-breath">Start</button>
+      <button class="btn btn-outline" onclick="stopBreath()" id="done-breath">Done</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Grounding -->
+<div class="modal-overlay" id="ground-modal" onclick="if(event.target===this)closeModal('ground-modal')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="ground-title">5-4-3-2-1 Grounding</span>
+      <button class="modal-close" onclick="closeModal('ground-modal')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6" id="ground-intro">Take a slow breath. Then look around and notice:</p>
+    <div class="ground-step"><strong>5</strong> <span id="g1">things you can <b>see</b></span></div>
+    <div class="ground-step"><strong>4</strong> <span id="g2">things you can <b>touch</b></span></div>
+    <div class="ground-step"><strong>3</strong> <span id="g3">things you can <b>hear</b></span></div>
+    <div class="ground-step"><strong>2</strong> <span id="g4">things you can <b>smell</b></span></div>
+    <div class="ground-step"><strong>1</strong> <span id="g5">thing you can <b>taste</b></span></div>
+    <button class="btn btn-outline btn-block" style="margin-top:14px" onclick="closeModal('ground-modal')" id="ground-done">Done — I feel grounded</button>
+  </div>
+</div>
+ 
+<!-- Book session -->
+<div class="modal-overlay" id="book-modal" onclick="if(event.target===this)closeModal('book-modal')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="book-title">Book a session</span>
+      <button class="modal-close" onclick="closeModal('book-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="book-date-lbl">Select date</label>
+      <input class="form-input" type="date" id="book-date">
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="book-time-lbl">Select time</label>
+      <div class="slot-grid">
+        <button class="slot-btn sel" onclick="selSlot(this)">09:00</button>
+        <button class="slot-btn" onclick="selSlot(this)">10:00</button>
+        <button class="slot-btn" onclick="selSlot(this)">11:00</button>
+        <button class="slot-btn" onclick="selSlot(this)">13:00</button>
+        <button class="slot-btn" onclick="selSlot(this)">14:00</button>
+        <button class="slot-btn" onclick="selSlot(this)">16:00</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="book-type-lbl">Session type</label>
+      <select class="form-input">
+        <option id="book-opt1">Online video call</option>
+        <option id="book-opt2">In-person visit</option>
+        <option id="book-opt3">Chat only</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="bookSession()" id="book-confirm">Confirm booking</button>
+      <button class="btn btn-outline" onclick="closeModal('book-modal')" id="book-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Navigate -->
+<div class="modal-overlay" id="nav-modal" onclick="if(event.target===this)closeModal('nav-modal')">
+  <div class="modal-box" style="text-align:center">
+    <div class="modal-head" style="justify-content:flex-end"><button class="modal-close" onclick="closeModal('nav-modal')">✕</button></div>
+    <div style="font-size:40px;margin-bottom:10px">🗺️</div>
+    <div class="modal-title" style="margin-bottom:8px" id="nav-title">Open directions</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px" id="nav-sub">This will open turn-by-turn directions in your map app.</p>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-green" onclick="closeModal('nav-modal');showToast(T[lang].mapsToast)" id="nav-open">Open in Maps</button>
+      <button class="btn btn-outline" onclick="closeModal('nav-modal')" id="nav-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Call -->
+<div class="modal-overlay" id="call-modal" onclick="if(event.target===this)closeModal('call-modal')">
+  <div class="modal-box" style="text-align:center">
+    <div class="modal-head" style="justify-content:flex-end"><button class="modal-close" onclick="closeModal('call-modal')">✕</button></div>
+    <div style="font-size:40px;margin-bottom:10px">📞</div>
+    <div class="modal-title" style="margin-bottom:6px" id="call-title">Call facility</div>
+    <div style="font-size:17px;font-weight:500;margin-bottom:4px">+62 24 8413991</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="call-hours">Mon–Fri, 07:00–21:00 WIB</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-primary" onclick="closeModal('call-modal');showToast(T[lang].callToast)" id="call-now">Call now</button>
+      <button class="btn btn-outline" onclick="closeModal('call-modal')" id="call-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+'use strict';
+ 
+/* ---- STATE ---- */
+let lang        = 'EN';
+let isDark      = false;
+let loggedIn    = false;
+let userName    = '';
+let isRecording = false;
+let breathTimer = null;
+let selectedMood = '😐';
+let aiMsgCount  = 0;
+ 
+/* ---- TRANSLATIONS ---- */
+const T = {
+  EN: {
+    /* Nav */
+    navDash:'Dashboard', navChat:'Chat', navPros:'Professionals', navFask:'Facilities',
+    authLogin:'Login', authLogout:'Logout',
+    /* Drawer/sidebar */
+    drMain:'Main', drSupport:'Support', drTools:'Tools',
+    drDash:'Dashboard', drChat:'Chat', drPros:'Professionals', drFask:'Facilities',
+    drMood:'Log mood', drCoping:'Coping tools',
+    sbMain:'Main', sbSupport:'Support', sbTools:'Tools',
+    sbDash:'Dashboard', sbChat:'Chat', sbPros:'Professionals', sbFask:'Facilities',
+    sbMood:'Log mood', sbCoping:'Coping tools',
+    /* Bottom nav */
+    bnHome:'Home', bnChat:'Chat', bnPros:'Pros', bnFask:'Faskes',
+    /* Landing */
+    heroTitle:'A calm space<br><span>for your mind</span>',
+    heroSub:'AI-powered mental wellness support. Talk, reflect, and find your path to healing — in a safe, private space.',
+    heroCta:'Start sharing', heroDemo:'See demo',
+    feat1:'AI Chat Support — talk anytime, no judgment',
+    feat2:'Coping Tools — breathing, grounding, journaling',
+    feat3:'Professional Referrals — connect when you\'re ready',
+    /* Login */
+    loginH:'Welcome back', loginSub:'Sign in to continue your journey',
+    loginNameLbl:'Your name', loginEmailLbl:'Email', loginPassLbl:'Password',
+    loginBtn:'Sign in', googleLbl:'Continue with Google',
+    loginOr:'or', loginFoot:'No account?', loginRegLink:'Register now',
+    loginErr:'⚠️ Please enter your password.', loginErrWrong:'⚠️ Incorrect password. Please try again.',
+    /* Register */
+    regH:'Create your account', regSub:'Join Calmy — free and confidential',
+    regNameLbl:'Full name', regEmailLbl:'Email', regPassLbl:'Password', regFocusLbl:'I\'m seeking support for',
+    regBtn:'Create account', regFoot:'Already have one?', regLoginLink:'Sign in',
+    regOpt1:'Anxiety & Stress', regOpt2:'Depression', regOpt3:'Relationship issues', regOpt4:'Grief & Loss', regOpt5:'General wellbeing',
+    /* Dashboard */
+    statMoodLbl:'Today\'s mood', statMoodSub:'Tap to update',
+    statSessLbl:'Sessions', statSessSub:'This month',
+    statStreakLbl:'Streak', statStreakSub:'Days in a row',
+    chartLbl:'Mood this week', chartExpand:'Expanded chart — coming soon!',
+    chartExpLbl:'Tap to expand',
+    clMon:'Mon',clTue:'Tue',clWed:'Wed',clThu:'Thu',clFri:'Fri',clSat:'Sat',clSun:'Sun',
+    riskLbl:'Risk indicator', riskSimLbl:'Simulate state:',
+    rbLow:'Low', rbMed:'Medium', rbHigh:'High',
+    riskTxtLow:'Stable — keep going!',
+    riskTxtMed:'Some stress detected. Try coping tools.',
+    riskTxtHigh:'Please seek support. Crisis mode available.',
+    riskSubLow:'Stable', riskSubMed:'Moderate', riskSubHigh:'Needs attention',
+    histLbl:'Recent sessions',
+    sess1:'Session with Calmy AI', sess1Meta:'Yesterday, 9:42 PM · 14 messages', sess1Tag:'Low risk',
+    sess2:'Breathing exercise', sess2Meta:'2 days ago · Coping tool', sess2Tag:'Completed',
+    sess3:'Session with Dr. Sari Dewi', sess3Meta:'3 days ago · Professional session', sess3Tag:'Professional',
+    /* Chat */
+    chatStatus:'Always here for you', chatTyping:'Typing...',
+    chatCoping:'🧘 Coping', chatCrisis:'🆘 Crisis',
+    chatPH:'Share how you feel...',
+    recTxt:'Recording... speak now',
+    firstMsg:'Hi {{name}} 👋 I\'m really glad you\'re here. How are you feeling today? There\'s no rush — take all the time you need.',
+    aiAlert:'<strong style="font-size:12px">⚠️ Heads up</strong><br>I\'ve noticed some signs of distress. Would you like to speak with a professional or access crisis support?<br><br><button onclick="go(\'pros\')" style="margin-right:6px;padding:5px 12px;border-radius:7px;border:1px solid rgba(0,0,0,.15);background:none;cursor:pointer;font-size:12px;font-family:inherit;color:inherit">Find professional</button><button onclick="go(\'crisis\')" style="padding:5px 12px;border-radius:7px;border:none;background:var(--alert);color:#fff;cursor:pointer;font-size:12px;font-family:inherit">Crisis support</button>',
+    voiceEN:"I've been feeling very anxious lately...",
+    /* Pros */
+    prosTitle:'Mental health professionals', prosSub:'Verified and compassionate — ready to support your journey',
+    prosSearch:'Search by name, specialty, or keyword...',
+    prosNoResult:'No professionals found.',
+    /* Faskes */
+    faskTitle:'Health facilities nearby', faskSub:'Semarang, Central Java — 4 facilities found',
+    mapTxt:'Map view · Semarang, Central Java',
+    faskSearch:'Search facilities...',
+    faskNoResult:'No facilities found.',
+    /* Crisis */
+    crisisH:'You are not alone',
+    crisisP:'We noticed signs of distress in your recent messages. Help is available right now — you don\'t have to face this alone.',
+    crisisBack:'← Back to chat',
+    /* Modals */
+    moodTitle:'How are you feeling?', moodNoteLbl:'Add a note (optional)',
+    moodSave:'Save', moodCancel:'Cancel',
+    copingTitle:'Coping tools',
+    ctBreathT:'Breathing exercise', ctBreathS:'4-7-8 calm breathing technique',
+    ctGroundT:'5-4-3-2-1 Grounding', ctGroundS:'Reconnect with the present moment',
+    ctJournalT:'Journal', ctJournalS:'Write your thoughts freely',
+    copingClose:'Close',
+    breathTitle:'Breathing exercise',
+    breathStart:'Press start to begin',
+    breathIn:'Breathe in... (4s)', breathHold:'Hold... (7s)', breathOut:'Breathe out... (8s)',
+    startBreath:'Start', doneBreath:'Done',
+    groundTitle:'5-4-3-2-1 Grounding',
+    groundIntro:'Take a slow breath. Then look around and notice:',
+    g1:'things you can <b>see</b>', g2:'things you can <b>touch</b>',
+    g3:'things you can <b>hear</b>', g4:'things you can <b>smell</b>', g5:'thing you can <b>taste</b>',
+    groundDone:'Done — I feel grounded',
+    bookTitle:'Book a session', bookDateLbl:'Select date', bookTimeLbl:'Select time',
+    bookTypeLbl:'Session type',
+    bookOpt1:'Online video call', bookOpt2:'In-person visit', bookOpt3:'Chat only',
+    bookConfirm:'Confirm booking', bookCancel:'Cancel',
+    navTitle:'Open directions', navSub:'This will open turn-by-turn directions in your map app.',
+    navOpen:'Open in Maps', navCancel:'Cancel',
+    callTitle:'Call facility', callHours:'Mon–Fri, 07:00–21:00 WIB',
+    callNow:'Call now', callCancel:'Cancel',
+    /* Toasts */
+    moodToast:'Mood logged ✓', bookToast:'Session booked ✓',
+    mapsToast:'Opening Google Maps...', callToast:'Initiating call...',
+    hotlineToast:'Calling 119 ext 8...', journalToast:'Journal opened!',
+    highRiskToast:'⚠️ High risk detected — crisis support available',
+    /* Greeting */
+    greetMorn:'Good morning', greetAfter:'Good afternoon', greetEve:'Good evening',
+    greetSuffix:'How are you feeling today?',
+  },
+  ID: {
+    navDash:'Dasbor', navChat:'Chat', navPros:'Profesional', navFask:'Faskes',
+    authLogin:'Masuk', authLogout:'Keluar',
+    drMain:'Utama', drSupport:'Dukungan', drTools:'Alat',
+    drDash:'Dasbor', drChat:'Chat', drPros:'Profesional', drFask:'Faskes',
+    drMood:'Catat suasana', drCoping:'Alat coping',
+    sbMain:'Utama', sbSupport:'Dukungan', sbTools:'Alat',
+    sbDash:'Dasbor', sbChat:'Chat', sbPros:'Profesional', sbFask:'Faskes',
+    sbMood:'Catat suasana', sbCoping:'Alat coping',
+    bnHome:'Beranda', bnChat:'Chat', bnPros:'Profesional', bnFask:'Faskes',
+    heroTitle:'Ruang tenang<br><span>untuk pikiranmu</span>',
+    heroSub:'Dukungan kesehatan mental berbasis AI. Ceritakan, refleksikan, dan temukan jalanmu menuju pemulihan.',
+    heroCta:'Mulai berbagi', heroDemo:'Lihat demo',
+    feat1:'Chat AI — bicara kapan saja, tanpa penilaian',
+    feat2:'Alat Coping — pernapasan, grounding, jurnal',
+    feat3:'Rujukan Profesional — terhubung saat kamu siap',
+    loginH:'Selamat datang', loginSub:'Masuk untuk melanjutkan perjalananmu',
+    loginNameLbl:'Nama kamu', loginEmailLbl:'Email', loginPassLbl:'Kata sandi',
+    loginBtn:'Masuk', googleLbl:'Lanjutkan dengan Google',
+    loginOr:'atau', loginFoot:'Belum punya akun?', loginRegLink:'Daftar sekarang',
+    loginErr:'⚠️ Masukkan kata sandi terlebih dahulu.', loginErrWrong:'⚠️ Kata sandi salah. Silakan coba lagi.',
+    regH:'Buat akun baru', regSub:'Bergabung dengan Calmy — gratis dan rahasia',
+    regNameLbl:'Nama lengkap', regEmailLbl:'Email', regPassLbl:'Kata sandi', regFocusLbl:'Saya mencari dukungan untuk',
+    regBtn:'Buat akun', regFoot:'Sudah punya akun?', regLoginLink:'Masuk',
+    regOpt1:'Kecemasan & Stres', regOpt2:'Depresi', regOpt3:'Masalah hubungan', regOpt4:'Kesedihan & Kehilangan', regOpt5:'Kesejahteraan umum',
+    statMoodLbl:'Suasana hari ini', statMoodSub:'Ketuk untuk update',
+    statSessLbl:'Sesi', statSessSub:'Bulan ini',
+    statStreakLbl:'Streak', statStreakSub:'Hari berturut-turut',
+    chartLbl:'Suasana minggu ini', chartExpand:'Tampilan diperluas — segera hadir!',
+    chartExpLbl:'Ketuk untuk perluas',
+    clMon:'Sen',clTue:'Sel',clWed:'Rab',clThu:'Kam',clFri:'Jum',clSat:'Sab',clSun:'Min',
+    riskLbl:'Indikator risiko', riskSimLbl:'Simulasi kondisi:',
+    rbLow:'Rendah', rbMed:'Sedang', rbHigh:'Tinggi',
+    riskTxtLow:'Stabil — terus semangat!',
+    riskTxtMed:'Ada tekanan terdeteksi. Coba alat coping.',
+    riskTxtHigh:'Mohon cari dukungan. Mode darurat tersedia.',
+    riskSubLow:'Stabil', riskSubMed:'Sedang', riskSubHigh:'Perlu perhatian',
+    histLbl:'Sesi terkini',
+    sess1:'Sesi dengan Calmy AI', sess1Meta:'Kemarin, 21:42 · 14 pesan', sess1Tag:'Risiko rendah',
+    sess2:'Latihan pernapasan', sess2Meta:'2 hari lalu · Alat coping', sess2Tag:'Selesai',
+    sess3:'Sesi dengan Dr. Sari Dewi', sess3Meta:'3 hari lalu · Sesi profesional', sess3Tag:'Profesional',
+    chatStatus:'Selalu ada untukmu', chatTyping:'Sedang mengetik...',
+    chatCoping:'🧘 Coping', chatCrisis:'🆘 Darurat',
+    chatPH:'Ceritakan perasaanmu...',
+    recTxt:'Merekam... bicaralah sekarang',
+    firstMsg:'Hei {{name}} 👋 Senang kamu di sini. Bagaimana perasaanmu hari ini? Tidak perlu tergesa-gesa — ceritakan saja.',
+    aiAlert:'<strong style="font-size:12px">⚠️ Perhatian</strong><br>Aku mendeteksi tanda-tanda tekanan. Apakah kamu ingin berbicara dengan profesional atau mengakses dukungan darurat?<br><br><button onclick="go(\'pros\')" style="margin-right:6px;padding:5px 12px;border-radius:7px;border:1px solid rgba(0,0,0,.15);background:none;cursor:pointer;font-size:12px;font-family:inherit;color:inherit">Cari profesional</button><button onclick="go(\'crisis\')" style="padding:5px 12px;border-radius:7px;border:none;background:var(--alert);color:#fff;cursor:pointer;font-size:12px;font-family:inherit">Dukungan darurat</button>',
+    voiceEN:'Saya merasa sangat cemas akhir-akhir ini...',
+    prosTitle:'Profesional kesehatan mental', prosSub:'Terverifikasi dan penuh empati — siap mendukung perjalananmu',
+    prosSearch:'Cari nama, spesialisasi, atau kata kunci...',
+    prosNoResult:'Tidak ada profesional yang ditemukan.',
+    faskTitle:'Fasilitas kesehatan terdekat', faskSub:'Semarang, Jawa Tengah — 4 fasilitas ditemukan',
+    mapTxt:'Tampilan peta · Semarang, Jawa Tengah',
+    faskSearch:'Cari fasilitas...',
+    faskNoResult:'Tidak ada fasilitas yang ditemukan.',
+    crisisH:'Kamu tidak sendirian',
+    crisisP:'Kami melihat tanda-tanda tekanan dalam pesanmu. Bantuan tersedia sekarang — kamu tidak harus menghadapi ini sendiri.',
+    crisisBack:'← Kembali ke chat',
+    moodTitle:'Bagaimana perasaanmu?', moodNoteLbl:'Tambah catatan (opsional)',
+    moodSave:'Simpan', moodCancel:'Batal',
+    copingTitle:'Alat coping',
+    ctBreathT:'Latihan pernapasan', ctBreathS:'Teknik pernapasan 4-7-8',
+    ctGroundT:'Grounding 5-4-3-2-1', ctGroundS:'Hubungkan kembali diri dengan masa kini',
+    ctJournalT:'Jurnal', ctJournalS:'Tuliskan pikiranmu dengan bebas',
+    copingClose:'Tutup',
+    breathTitle:'Latihan pernapasan',
+    breathStart:'Tekan mulai untuk memulai',
+    breathIn:'Tarik napas... (4 detik)', breathHold:'Tahan... (7 detik)', breathOut:'Hembuskan... (8 detik)',
+    startBreath:'Mulai', doneBreath:'Selesai',
+    groundTitle:'Grounding 5-4-3-2-1',
+    groundIntro:'Tarik napas perlahan. Lalu perhatikan sekitarmu:',
+    g1:'hal yang bisa kamu <b>lihat</b>', g2:'hal yang bisa kamu <b>sentuh</b>',
+    g3:'hal yang bisa kamu <b>dengar</b>', g4:'hal yang bisa kamu <b>cium</b>', g5:'hal yang bisa kamu <b>rasakan</b>',
+    groundDone:'Selesai — saya merasa lebih tenang',
+    bookTitle:'Pesan sesi', bookDateLbl:'Pilih tanggal', bookTimeLbl:'Pilih waktu',
+    bookTypeLbl:'Jenis sesi',
+    bookOpt1:'Video online', bookOpt2:'Kunjungan langsung', bookOpt3:'Chat saja',
+    bookConfirm:'Konfirmasi pemesanan', bookCancel:'Batal',
+    navTitle:'Buka navigasi', navSub:'Ini akan membuka navigasi ke fasilitas di aplikasi peta kamu.',
+    navOpen:'Buka di Maps', navCancel:'Batal',
+    callTitle:'Hubungi fasilitas', callHours:'Senin–Jumat, 07:00–21:00 WIB',
+    callNow:'Hubungi sekarang', callCancel:'Batal',
+    moodToast:'Suasana hati disimpan ✓', bookToast:'Sesi berhasil dipesan ✓',
+    mapsToast:'Membuka Google Maps...', callToast:'Menghubungi...', hotlineToast:'Menghubungi 119 ext 8...',
+    journalToast:'Jurnal dibuka!',
+    highRiskToast:'⚠️ Risiko tinggi terdeteksi — dukungan darurat tersedia',
+    greetMorn:'Selamat pagi', greetAfter:'Selamat siang', greetEve:'Selamat malam',
+    greetSuffix:'Bagaimana perasaanmu hari ini?',
+  }
+};
+ 
+/* AI replies */
+const AI_REPLIES = {
+  EN: [
+    "Thank you for sharing that. Can you tell me more about what's been weighing on you?",
+    "I hear you. It sounds like this has been really difficult. You're not alone in this.",
+    "That makes a lot of sense. Have you tried any coping strategies recently?",
+    "I'm glad you reached out. It's okay to feel this way. Would you like to try a breathing exercise?",
+    "You're showing real courage by talking about this. What would feel most supportive right now?",
+    "It sounds like you've been carrying a lot lately. Let's take this one step at a time."
+  ],
+  ID: [
+    "Terima kasih sudah berbagi. Bisakah kamu ceritakan lebih lanjut apa yang sedang membebanimu?",
+    "Aku dengar kamu. Sepertinya ini memang sangat berat. Kamu tidak sendirian.",
+    "Itu sangat masuk akal. Pernahkah kamu mencoba teknik coping belakangan ini?",
+    "Aku senang kamu menghubungi. Tidak apa-apa merasa seperti ini. Mau coba latihan pernapasan?",
+    "Kamu sangat berani dengan membicarakan ini. Apa yang paling membantu kamu sekarang?",
+    "Sepertinya kamu sudah membawa banyak beban. Mari hadapi satu langkah demi satu langkah."
+  ]
+};
+ 
+/* ---- HELPERS ---- */
+function $(id) { return document.getElementById(id); }
+function setTxt(id, val) { const el = $(id); if (el) el.textContent = val; }
+function setHTML(id, val) { const el = $(id); if (el) el.innerHTML = val; }
+function t() { return T[lang]; }
+ 
+/* ---- NAVIGATION ---- */
+function go(page) {
+  document.querySelectorAll('.page, .chat-page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + page);
+  if (el) { el.classList.add('active'); window.scrollTo(0, 0); }
+ 
+  // Sync all nav active states
+  ['[data-page]','[data-sb]','[data-bnav]'].forEach(sel => {
+    document.querySelectorAll(sel).forEach(btn => {
+      const key = btn.dataset.page || btn.dataset.sb || btn.dataset.bnav;
+      // treat pro-chat as pros for nav highlighting
+      const activePage = page === 'pro-chat' ? 'pros' : page;
+      btn.classList.toggle('active', key === activePage);
+    });
+  });
+ 
+  if (page === 'dashboard') { buildChart(); updateGreeting(); }
+}
+ 
+/* ---- DRAWER ---- */
+function openDrawer() {
+  $('drawer').classList.add('open');
+  $('drawer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  $('drawer').classList.remove('open');
+  $('drawer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+ 
+/* ---- DARK MODE ---- */
+function toggleDark() {
+  isDark = !isDark;
+  document.documentElement.classList.toggle('dark', isDark);
+  $('theme-icon').textContent = isDark ? '🌙' : '☀️';
+}
+ 
+/* ---- LANGUAGE ---- */
+function toggleLang() {
+  lang = lang === 'EN' ? 'ID' : 'EN';
+  $('lang-lbl').textContent = lang;
+  applyLang();
+}
+ 
+function applyLang() {
+  const L = t();
+ 
+  // Navbar links
+  document.querySelectorAll('[data-page]').forEach(btn => {
+    const key = btn.dataset.page;
+    const map = { dashboard: L.navDash, chat: L.navChat, pros: L.navPros, faskes: L.navFask };
+    if (map[key]) btn.textContent = map[key];
+  });
+ 
+  // Auth button
+  setTxt('auth-btn', loggedIn ? L.authLogout : L.authLogin);
+  setTxt('drawer-auth-btn', loggedIn ? L.authLogout : L.authLogin);
+ 
+  // Drawer
+  setTxt('dr-main', L.drMain); setTxt('dr-support', L.drSupport); setTxt('dr-tools', L.drTools);
+  setTxt('dr-dash', L.drDash); setTxt('dr-chat', L.drChat); setTxt('dr-pros', L.drPros);
+  setTxt('dr-fask', L.drFask); setTxt('dr-mood', L.drMood); setTxt('dr-coping', L.drCoping);
+ 
+  // Bottom nav
+  setTxt('bn-home', L.bnHome); setTxt('bn-chat', L.bnChat); setTxt('bn-pros', L.bnPros); setTxt('bn-fask', L.bnFask);
+ 
+  // Landing
+  setHTML('hero-title', L.heroTitle); setTxt('hero-sub', L.heroSub);
+  setTxt('hero-cta', L.heroCta); setTxt('hero-demo', L.heroDemo);
+  setTxt('feat-1', L.feat1); setTxt('feat-2', L.feat2); setTxt('feat-3', L.feat3);
+ 
+  // Login
+  setTxt('login-h', L.loginH); setTxt('login-sub', L.loginSub);
+  setTxt('login-name-lbl', L.loginNameLbl); setTxt('login-email-lbl', L.loginEmailLbl); setTxt('login-pass-lbl', L.loginPassLbl);
+  setTxt('login-btn', L.loginBtn); setTxt('google-lbl', L.googleLbl);
+  setTxt('login-or', L.loginOr);
+  setHTML('login-foot', L.loginFoot + ' <a href="#" style="color:var(--purple)" onclick="go(\'register\');return false">' + L.loginRegLink + '</a>');
+ 
+  // Register
+  setTxt('reg-h', L.regH); setTxt('reg-sub', L.regSub);
+  setTxt('reg-name-lbl', L.regNameLbl); setTxt('reg-email-lbl', L.regEmailLbl);
+  setTxt('reg-pass-lbl', L.regPassLbl); setTxt('reg-focus-lbl', L.regFocusLbl);
+  setTxt('reg-btn', L.regBtn);
+  setHTML('reg-foot', L.regFoot + ' <a href="#" style="color:var(--purple)" onclick="go(\'login\');return false">' + L.regLoginLink + '</a>');
+  setTxt('reg-opt1', L.regOpt1); setTxt('reg-opt2', L.regOpt2); setTxt('reg-opt3', L.regOpt3);
+  setTxt('reg-opt4', L.regOpt4); setTxt('reg-opt5', L.regOpt5);
+ 
+  // Sidebar
+  setTxt('sb-main-lbl', L.sbMain); setTxt('sb-support-lbl', L.sbSupport); setTxt('sb-tools-lbl', L.sbTools);
+  setTxt('sb-dash', L.sbDash); setTxt('sb-chat', L.sbChat); setTxt('sb-pros', L.sbPros);
+  setTxt('sb-fask', L.sbFask); setTxt('sb-mood', L.sbMood); setTxt('sb-coping', L.sbCoping);
+ 
+  // Dashboard
+  updateGreeting();
+  setTxt('stat-mood-lbl', L.statMoodLbl); setTxt('stat-mood-sub', L.statMoodSub);
+  setTxt('stat-sess-lbl', L.statSessLbl); setTxt('stat-sess-sub', L.statSessSub);
+  setTxt('stat-streak-lbl', L.statStreakLbl); setTxt('stat-streak-sub', L.statStreakSub);
+  setTxt('chart-lbl', L.chartLbl); setTxt('chart-expand', L.chartExpLbl);
+  setTxt('cl-mon', L.clMon); setTxt('cl-tue', L.clTue); setTxt('cl-wed', L.clWed);
+  setTxt('cl-thu', L.clThu); setTxt('cl-fri', L.clFri); setTxt('cl-sat', L.clSat); setTxt('cl-sun', L.clSun);
+  setTxt('risk-lbl', L.riskLbl); setTxt('risk-sim-lbl', L.riskSimLbl);
+  setTxt('rb-low', L.rbLow); setTxt('rb-med', L.rbMed); setTxt('rb-high', L.rbHigh);
+  setTxt('hist-lbl', L.histLbl);
+  setTxt('sess1-title', L.sess1); setTxt('sess1-meta', L.sess1Meta); setTxt('sess1-tag', L.sess1Tag);
+  setTxt('sess2-title', L.sess2); setTxt('sess2-meta', L.sess2Meta); setTxt('sess2-tag', L.sess2Tag);
+  setTxt('sess3-title', L.sess3); setTxt('sess3-meta', L.sess3Meta); setTxt('sess3-tag', L.sess3Tag);
+ 
+  // Chat
+  setTxt('chat-status', L.chatStatus);
+  setTxt('chat-coping-btn', L.chatCoping); setTxt('chat-crisis-btn', L.chatCrisis);
+  const ci = $('chat-in'); if (ci) ci.placeholder = L.chatPH;
+  setTxt('rec-txt', L.recTxt);
+  // Update first AI message with user's name
+  const name = userName || (lang === 'ID' ? 'teman' : 'there');
+  setTxt('first-ai-msg', L.firstMsg.replace('{{name}}', name));
+ 
+  // Professionals
+  setTxt('pros-title', L.prosTitle); setTxt('pros-sub', L.prosSub);
+  const pi = $('pros-search'); if (pi) pi.placeholder = L.prosSearch;
+  setTxt('pros-no-results', L.prosNoResult);
+ 
+  // Faskes
+  setTxt('fask-title', L.faskTitle); setTxt('fask-sub', L.faskSub);
+  setTxt('map-txt', L.mapTxt);
+  const fi = $('fask-search'); if (fi) fi.placeholder = L.faskSearch;
+  setTxt('fask-no-results', L.faskNoResult);
+ 
+  // Crisis
+  setTxt('crisis-h', L.crisisH); setTxt('crisis-p', L.crisisP); setTxt('crisis-back', L.crisisBack);
+ 
+  // Modals
+  setTxt('mood-title', L.moodTitle); setTxt('mood-note-lbl', L.moodNoteLbl);
+  setTxt('mood-save', L.moodSave); setTxt('mood-cancel', L.moodCancel);
+  setTxt('coping-title', L.copingTitle);
+  setTxt('ct-breath-t', L.ctBreathT); setTxt('ct-breath-s', L.ctBreathS);
+  setTxt('ct-ground-t', L.ctGroundT); setTxt('ct-ground-s', L.ctGroundS);
+  setTxt('ct-journal-t', L.ctJournalT); setTxt('ct-journal-s', L.ctJournalS);
+  setTxt('coping-close', L.copingClose);
+  setTxt('breath-modal-title', L.breathTitle); setTxt('breath-text', L.breathStart);
+  setTxt('start-breath', L.startBreath); setTxt('done-breath', L.doneBreath);
+  setTxt('ground-title', L.groundTitle); setTxt('ground-intro', L.groundIntro);
+  setHTML('g1', L.g1); setHTML('g2', L.g2); setHTML('g3', L.g3); setHTML('g4', L.g4); setHTML('g5', L.g5);
+  setTxt('ground-done', L.groundDone);
+  setTxt('book-title', L.bookTitle); setTxt('book-date-lbl', L.bookDateLbl); setTxt('book-time-lbl', L.bookTimeLbl);
+  setTxt('book-type-lbl', L.bookTypeLbl);
+  setTxt('book-opt1', L.bookOpt1); setTxt('book-opt2', L.bookOpt2); setTxt('book-opt3', L.bookOpt3);
+  setTxt('book-confirm', L.bookConfirm); setTxt('book-cancel', L.bookCancel);
+  setTxt('nav-title', L.navTitle); setTxt('nav-sub', L.navSub);
+  setTxt('nav-open', L.navOpen); setTxt('nav-cancel', L.navCancel);
+  setTxt('call-title', L.callTitle); setTxt('call-hours', L.callHours);
+  setTxt('call-now', L.callNow); setTxt('call-cancel', L.callCancel);
+}
+ 
+/* ---- GREETING ---- */
+function updateGreeting() {
+  const L = t();
+  const h = new Date().getHours();
+  const greet = h < 12 ? L.greetMorn : h < 17 ? L.greetAfter : L.greetEve;
+  const name = userName || (lang === 'ID' ? 'Pengguna' : 'there');
+  const el = $('dash-greeting');
+  if (el) el.textContent = greet + ', ' + name + ' 👋  ' + L.greetSuffix;
+}
+ 
+/* ---- AUTH ---- */
+function handleAuth() {
+  if (loggedIn) {
+    loggedIn = false; userName = '';
+    setTxt('auth-btn', t().authLogin); setTxt('drawer-auth-btn', t().authLogin);
+    go('landing');
+  } else {
+    go('login');
+  }
+}
+ 
+function doLogin() {
+  const name = $('login-name').value.trim();
+  const pass = $('login-pass').value;
+  const err = $('login-err');
+  err.style.display = 'none';
+ 
+  if (!pass) { err.textContent = t().loginErr; err.style.display = 'block'; return; }
+  if (pass === 'wrong' || pass === 'error') { err.textContent = t().loginErrWrong; err.style.display = 'block'; return; }
+ 
+  loggedIn = true;
+  userName = name || (lang === 'ID' ? 'Teman' : 'Friend');
+  setTxt('auth-btn', t().authLogout); setTxt('drawer-auth-btn', t().authLogout);
+ 
+  // Update first AI message with real name
+  const L = t();
+  setTxt('first-ai-msg', L.firstMsg.replace('{{name}}', userName));
+  go('dashboard');
+}
+ 
+function doGoogleLogin() {
+  loggedIn = true;
+  userName = 'Google User';
+  setTxt('auth-btn', t().authLogout); setTxt('drawer-auth-btn', t().authLogout);
+  const L = t();
+  setTxt('first-ai-msg', L.firstMsg.replace('{{name}}', userName));
+  go('dashboard');
+}
+ 
+function doRegister() {
+  const name = $('reg-name').value.trim();
+  loggedIn = true;
+  userName = name || (lang === 'ID' ? 'Teman' : 'Friend');
+  setTxt('auth-btn', t().authLogout); setTxt('drawer-auth-btn', t().authLogout);
+  const L = t();
+  setTxt('first-ai-msg', L.firstMsg.replace('{{name}}', userName));
+  go('dashboard');
+}
+ 
+/* ---- SEARCH ---- */
+function filterPros() {
+  const q = $('pros-search').value.toLowerCase().trim();
+  let n = 0;
+  document.querySelectorAll('#pros-list .pro-card').forEach(card => {
+    const match = !q || (card.dataset.search + card.innerText).toLowerCase().includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) n++;
+  });
+  $('pros-no-results').style.display = n === 0 ? 'block' : 'none';
+}
+ 
+function filterFaskes() {
+  const q = $('fask-search').value.toLowerCase().trim();
+  let n = 0;
+  document.querySelectorAll('#fask-list .fask-card').forEach(card => {
+    const match = !q || (card.dataset.search + card.innerText).toLowerCase().includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) n++;
+  });
+  $('fask-no-results').style.display = n === 0 ? 'block' : 'none';
+}
+ 
+/* ---- CHAT ---- */
+function addMsg(text, type, isAlert) {
+  const area = $('chat-area');
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + type + ' fade-in';
+  if (type === 'ai') {
+    const lbl = document.createElement('span');
+    lbl.className = 'msg-sender'; lbl.textContent = 'Calmy';
+    row.appendChild(lbl);
+  }
+  const bub = document.createElement('div');
+  if (isAlert) { bub.className = 'bubble-alert'; bub.innerHTML = text; }
+  else { bub.className = 'bubble bubble-' + type; bub.textContent = text; }
+  row.appendChild(bub);
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+}
+ 
+function showTyping() {
+  const area = $('chat-area');
+  const row = document.createElement('div');
+  row.className = 'msg-row ai fade-in'; row.id = 'typing-row';
+  const lbl = document.createElement('span'); lbl.className = 'msg-sender'; lbl.textContent = 'Calmy';
+  row.appendChild(lbl);
+  const bub = document.createElement('div');
+  bub.className = 'bubble bubble-ai typing-bubble';
+  bub.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  row.appendChild(bub);
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+  return row;
+}
+ 
+function sendMsg() {
+  const inp = $('chat-in');
+  const val = inp.value.trim();
+  if (!val) return;
+  inp.value = '';
+  addMsg(val, 'user', false);
+  const typing = showTyping();
+  const status = $('chat-status');
+  status.textContent = t().chatTyping;
+ 
+  setTimeout(() => {
+    typing.remove();
+    const replies = AI_REPLIES[lang];
+    addMsg(replies[aiMsgCount % replies.length], 'ai', false);
+    status.textContent = t().chatStatus;
+    aiMsgCount++;
+ 
+    if (aiMsgCount === 3) {
+      setTimeout(() => addMsg(t().aiAlert, 'ai', true), 700);
+    }
+  }, 900 + Math.random() * 400);
+}
+ 
+function toggleVoice() {
+  isRecording = !isRecording;
+  const btn = $('voice-btn'), bar = $('rec-bar');
+  btn.classList.toggle('rec', isRecording);
+  btn.textContent = isRecording ? '⏹️' : '🎙️';
+  bar.classList.toggle('show', isRecording);
+  if (!isRecording) {
+    setTimeout(() => { const inp = $('chat-in'); inp.value = t().voiceEN; inp.focus(); }, 500);
+  }
+}
+ 
+/* ---- MODALS ---- */
+function openModal(id) { closeAllModals(); $(id).classList.add('open'); }
+function closeModal(id) { $(id).classList.remove('open'); }
+function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
+ 
+/* ---- MOOD ---- */
+function selMood(el, emoji) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel'); selectedMood = emoji;
+}
+function saveMood() {
+  const el = $('stat-mood-val'); if (el) el.textContent = selectedMood;
+  closeModal('mood-modal'); showToast(t().moodToast);
+}
+ 
+/* ---- BREATHING ---- */
+function openBreath()    { closeModal('coping-modal'); openModal('breath-modal'); }
+function openGrounding() { closeModal('coping-modal'); openModal('ground-modal'); }
+ 
+function startBreath() {
+  const circle = $('breathe-circle'), txt = $('breath-text');
+  let phase = 0;
+  const phases = () => [
+    { text: t().breathIn,   expand: true,  dur: 4000 },
+    { text: t().breathHold, expand: true,  dur: 7000 },
+    { text: t().breathOut,  expand: false, dur: 8000 }
+  ];
+  clearTimeout(breathTimer);
+  function next() {
+    const p = phases()[phase % 3];
+    txt.textContent = p.text;
+    circle.classList.toggle('expand', p.expand);
+    phase++;
+    breathTimer = setTimeout(next, p.dur);
+  }
+  next();
+}
+function stopBreath() {
+  clearTimeout(breathTimer);
+  $('breathe-circle').classList.remove('expand');
+  $('breath-text').textContent = t().breathStart;
+  closeModal('breath-modal');
+}
+ 
+/* ---- RISK ---- */
+function setRisk(level) {
+  const L = t();
+  const cfg = {
+    low:    { w: '20%', bg: '#A8E6CF', cls: 'tag tag-low', lbl: L.rbLow,  txt: L.riskTxtLow,  sub: L.riskSubLow  },
+    medium: { w: '58%', bg: '#FAC775', cls: 'tag tag-med', lbl: L.rbMed,  txt: L.riskTxtMed,  sub: L.riskSubMed  },
+    high:   { w: '92%', bg: '#FF6B6B', cls: 'tag tag-high',lbl: L.rbHigh, txt: L.riskTxtHigh, sub: L.riskSubHigh }
+  };
+  const c = cfg[level];
+  const fill = $('risk-fill'), badge = $('risk-badge'), txt = $('risk-txt'), sub = $('risk-sub');
+  if (fill)  { fill.style.width = c.w; fill.style.background = c.bg; }
+  if (badge) { badge.className = c.cls; badge.textContent = c.lbl; }
+  if (txt)   txt.textContent = c.txt;
+  if (sub)   sub.textContent = c.sub;
+  if (level === 'high') setTimeout(() => showToast(t().highRiskToast), 500);
+}
+ 
+/* ---- BOOKING ---- */
+function selSlot(el) { document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); }
+function bookSession() { closeModal('book-modal'); showToast(t().bookToast); }
+ 
+/* ---- HOTLINE ---- */
+function callHotline() { showToast(t().hotlineToast); }
+ 
+/* ---- TOAST ---- */
+function showToast(msg) {
+  const el = $('toast'); el.textContent = msg;
+  el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2800);
+}
+ 
+/* ---- CHART ---- */
+function buildChart() {
+  const chart = $('mini-chart'); if (!chart) return;
+  chart.innerHTML = '';
+  const vals   = [45, 62, 38, 75, 55, 82, 68];
+  const colors = ['#F7C1C1','#A8E6CF','#F7C1C1','#A8E6CF','#B5D4F4','#A8E6CF','#CBAACB'];
+  vals.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'chart-bar';
+    bar.style.height = v + '%'; bar.style.background = colors[i];
+    chart.appendChild(bar);
+  });
+}
+ 
+/* ---- PRO CHAT ---- */
+const PRO_REPLIES = {
+  EN: [
+    "Thank you for reaching out. I've reviewed your recent sessions and I'm here to help. What would you like to discuss today?",
+    "That's a really important point. Many of my patients experience the same thing — you're not alone in this.",
+    "I'd like to understand more about how that affects your daily routine. Can you tell me a bit more?",
+    "Based on what you're sharing, I'd suggest we explore some structured coping strategies together. Would that be helpful?",
+    "You're making real progress by opening up about this. Let's work through it step by step.",
+    "That's a very valid concern. In my professional experience, this is something we can address effectively with the right approach."
+  ],
+  ID: [
+    "Terima kasih sudah menghubungi saya. Saya sudah meninjau sesi-sesi sebelumnya dan siap membantu. Apa yang ingin kamu diskusikan hari ini?",
+    "Itu poin yang sangat penting. Banyak pasien saya mengalami hal serupa — kamu tidak sendirian.",
+    "Saya ingin lebih memahami bagaimana hal itu memengaruhi rutinitas harianmu. Bisakah kamu ceritakan lebih lanjut?",
+    "Berdasarkan yang kamu ceritakan, saya sarankan kita eksplorasi strategi coping terstruktur bersama. Apakah itu akan membantu?",
+    "Kamu membuat kemajuan nyata dengan membuka diri tentang ini. Mari kita hadapi langkah demi langkah.",
+    "Itu kekhawatiran yang sangat valid. Dalam pengalaman profesional saya, ini adalah sesuatu yang bisa kita tangani dengan pendekatan yang tepat."
+  ]
+};
+let proMsgCount = 0;
+ 
+function openProChat(name, role, emoji, gradient) {
+  // Set header info
+  const avatar = document.getElementById('pro-chat-avatar');
+  const nameEl = document.getElementById('pro-chat-name');
+  const roleEl = document.getElementById('pro-chat-role');
+  if (avatar) { avatar.style.background = gradient; avatar.textContent = emoji; }
+  if (nameEl) nameEl.textContent = name;
+  if (roleEl) roleEl.textContent = role;
+ 
+  // Clear chat and add greeting
+  const area = document.getElementById('pro-chat-area');
+  if (area) {
+    area.innerHTML = '';
+    proMsgCount = 0;
+    // Add initial greeting from pro
+    const row = document.createElement('div');
+    row.className = 'msg-row ai fade-in';
+    const lbl = document.createElement('span');
+    lbl.className = 'msg-sender'; lbl.textContent = name;
+    const bub = document.createElement('div');
+    bub.className = 'bubble bubble-ai';
+    const greeting = lang === 'ID'
+      ? `Halo${userName ? ', ' + userName : ''}! Saya ${name}. Saya di sini untuk mendukung kamu. Apa yang ingin kamu ceritakan hari ini?`
+      : `Hello${userName ? ', ' + userName : ''}! I'm ${name}. I'm here to support you. What would you like to talk about today?`;
+    bub.textContent = greeting;
+    row.appendChild(lbl); row.appendChild(bub);
+    area.appendChild(row);
+  }
+ 
+  // Update placeholder
+  const inp = document.getElementById('pro-chat-in');
+  if (inp) inp.placeholder = lang === 'ID' ? `Pesan ke ${name}...` : `Message ${name}...`;
+ 
+  // Update info banner
+  const info = document.getElementById('pro-chat-info');
+  if (info) info.textContent = lang === 'ID'
+    ? `Chat pribadi dengan ${name}. Semua pesan bersifat rahasia.`
+    : `Private chat with ${name}. All messages are confidential.`;
+ 
+  go('pro-chat');
+}
+ 
+function sendProMsg() {
+  const inp = document.getElementById('pro-chat-in');
+  const area = document.getElementById('pro-chat-area');
+  const nameEl = document.getElementById('pro-chat-name');
+  if (!inp || !area) return;
+  const val = inp.value.trim();
+  if (!val) return;
+  inp.value = '';
+ 
+  // User bubble
+  const userRow = document.createElement('div');
+  userRow.className = 'msg-row user fade-in';
+  const userBub = document.createElement('div');
+  userBub.className = 'bubble bubble-user';
+  userBub.textContent = val;
+  userRow.appendChild(userBub);
+  area.appendChild(userRow);
+  area.scrollTop = area.scrollHeight;
+ 
+  // Typing indicator
+  const typing = document.createElement('div');
+  typing.className = 'msg-row ai fade-in'; typing.id = 'pro-typing';
+  const tLbl = document.createElement('span'); tLbl.className = 'msg-sender';
+  tLbl.textContent = nameEl ? nameEl.textContent : 'Professional';
+  const tBub = document.createElement('div');
+  tBub.className = 'bubble bubble-ai typing-bubble';
+  tBub.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  typing.appendChild(tLbl); typing.appendChild(tBub);
+  area.appendChild(typing);
+  area.scrollTop = area.scrollHeight;
+ 
+  setTimeout(() => {
+    typing.remove();
+    const replies = PRO_REPLIES[lang];
+    const proRow = document.createElement('div');
+    proRow.className = 'msg-row ai fade-in';
+    const proLbl = document.createElement('span'); proLbl.className = 'msg-sender';
+    proLbl.textContent = nameEl ? nameEl.textContent : 'Professional';
+    const proBub = document.createElement('div');
+    proBub.className = 'bubble bubble-ai';
+    proBub.textContent = replies[proMsgCount % replies.length];
+    proRow.appendChild(proLbl); proRow.appendChild(proBub);
+    area.appendChild(proRow);
+    area.scrollTop = area.scrollHeight;
+    proMsgCount++;
+  }, 1000 + Math.random() * 600);
+}
+ 
+/* ---- INIT ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  const dateEl = $('book-date');
+  if (dateEl) { dateEl.min = today; dateEl.value = today; }
+  buildChart();
+  updateGreeting();
+});
+</script>
+</body>
+</html>
